@@ -1,0 +1,49 @@
+ {
+	"name": "data-collection",
+	"image": "mclevey/data-collection:latest",
+	"postCreateCommand": "poetry install",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"njpwerner.autodocstring",
+				"ms-toolsai.jupyter",
+				"ms-vscode-remote.remote-containers",
+				"quarto.quarto",
+				"ms-azuretools.vscode-docker",
+				"mechatroner.rainbow-csv"
+			]
+		}
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/python:1": {},
+		"ghcr.io/rocker-org/devcontainer-features/miniforge:1": {}
+	},
+	"remoteUser": "root"
+}
+// ALTERNATIVELY, use the following to build the image from the local Dockerfile
+// {
+// 	"name": "data-collection",
+// 	"build": {
+// 		"dockerfile": "Dockerfile"
+// 	},
+// 	"postCreateCommand": "poetry install",
+// 	"customizations": {
+// 		"vscode": {
+// 			"extensions": [
+// 				"ms-python.python",
+// 				"njpwerner.autodocstring",
+// 				"ms-toolsai.jupyter",
+// 				"ms-vscode-remote.remote-containers",
+// 				"quarto.quarto",
+// 				"ms-azuretools.vscode-docker",
+// 				"mechatroner.rainbow-csv"
+// 			]
+// 		}
+// 	},
+// 	"features": {
+// 		"ghcr.io/devcontainers/features/python:1": {},
+// 		"ghcr.io/rocker-org/devcontainer-features/miniforge:1": {}
+// 	},
+// 	"remoteUser": "root"
+// }

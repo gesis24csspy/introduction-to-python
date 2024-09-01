@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "gesis24csspy"
+package-mode = false
+version = "0.1.0"
+description = ""
+authors = ["John McLevey <john.mclevey@uwaterloo.ca>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ipykernel = "^6.29.5"
+pandas = "^2.2.2"
+bs4 = "^0.0.2"
+jupyter-cache = "^1.0.0"
+matplotlib = "^3.9.0"
+nbclient = "^0.10.0"
+pyprojroot = "^0.3.0"
+requests = "^2.32.3"
+seaborn = "^0.13.2"
+numpy = "^1.26.4"                     # "^2.0.1" is not compatible with bertopic; want to be consistent acorss modules
+google-api-python-client = "^2.137.0"
+tqdm = "^4.66.5"
+python-dotenv = "^1.0.1"
+rich = "^13.8.0"
+lxml = "^5.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
