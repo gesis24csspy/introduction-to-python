@@ -1,0 +1,564 @@
+---
+title: "Python Programming: Data Structures, Functions, and Files"
+description: "This tutorial notebook is a version of Chapter 3, 'Python Programming: Data Structures, Functions, and Files,' in John McLevey (2024) *Doing Computational Social Science: A Practical Introduction*. London, UK: Sage."
+author:
+  - name: John McLevey
+    url: https://johnmclevey.com
+    email: john.mclevey@uwaterloo.ca
+    corresponding: true
+    affiliations:
+      - name: University of Waterloo
+date: "08/26/2024"
+date-modified: last-modified
+categories:
+  - Python
+  - GESIS
+  - computational social science
+  - data science
+tags:
+  - Python
+  - GESIS
+bibliography: references.bib
+reference-location: margin
+citation-location: margin
+freeze: true
+license: "CC BY-SA"
+---
+
+
+# LEARNING OBJECTIVES
+
+By the end of this chapter, you should be able to:
+
+- Perform common operations on Python's builtin data structures, including lists, tuples, and dictionaries 
+- Use for loops and comprehensions to perform operations on items in lists, tuples, and dictionaries
+- Use the operators `in`, `not in`, and `isinstance` in control flow 
+- Articulate what it means for a Python object to be 'iterable'
+- Design, develop, and use your own custom functions 
+- Read data from, and write data to, external files 
+
+
+# INTRODUCTION
+
+In this chapter, you will learn about Python's most common built-in data structures: lists, tuples, and dictionaries. We start by learning the basic syntax for each of these data structures, followed by some of the most common methods and operations used to perform operations on the items contained in each. We will place a particularly heavy emphasis on understanding how to iterate over the items in a data structure using for-loops and comprehensions. Finally, we will then learn how and why to write our own custom functions, and how to work with external files.
+
+# Working with Python's Data Structures
+
+## Working with Lists and Tuples
+
+In Python, lists are ordered collections of *any* object, such as strings, integers, floats, or other data structures: even other lists. The items in a list may be of the same type, *but they do not have to be*. Python lists are very flexible. You can mix information of various kinds in a list, you can add information to the list on-the-fly, and you are able to remove or change any of the information the list contains. This is not always the case in other languages. The most basic list looks like this:
+
+```{python}
+my_list = []
+```
+
+The above code produces an empty list; it contains no objects. You can also create an empty list by referring directly to the built-in type:
+
+```{python}
+my_list = list()
+```
+
+All lists begin and end with square brackets `[]`, and elements are separated by a comma. Below, we define 2 lists containing strings (megacities in one list and their countries in another) and one list containing numbers (city population in 2018). Note that we are using `_` as a thousands separator to make our code more readable. As far as Python is concerned, `37_468_000` and `37468000` are identical numbers, but the former is easier to read.
+
+```{python}
+megacities = ['Tokyo','Delhi','Shanghai','Sao Paulo','Mexico City','Cairo','Dhaka','Mumbai','Beijing','Osaka']
+countries = ['Japan','India','China','Brazil','Mexico','Egypt','Bangladesh','India','China','Japan']
+pop2018 = [37_468_000, 28_514_000, 25_582_000, 21_650_000, 21_581_000, 20_076_000, 19_980_000, 19_618_000, 19_578_000, 19_281_000]
+```
+
+Every item in a list has an **`index`** based on its position in that list. Indices are integers and, like most other programming languages, **Python's indexing starts at 0**, which means that the first item in any list -- or anything else that is indexed in Python -- starts at 0. In the `megacities` list, the index for `Tokyo` is 0, `Delhi` is 1, `Shanghai` is 2, and so on. Figure @fig:04_01 illustrates the idea.
+
+![Indexing in Python starts at 0, not 1.](../figures/indexes.png)
+
+We can use the index to select a specific item from a list by typing the name of the list and then the index number inside square brackets.
+
+```{python}
+megacities[3] 
+```
+
+We can also access individual items by working from the end of the list. To do so, we use a `-` sign in the brackets. Note that unlike counting up from 0, we are not counting down from "-0". While `[2]` gives the third element, `[-2]` gives the second-from-last. To select `'China'` from `countries`, we could use:
+
+```{python}
+countries[8]
+countries[-2]
+```
+
+When we access an individual item from a list, Python returns the item in its expected datatype. For example, `megacities[3]` returns `'Sao Paulo'` as a string, and `pop2018[3]` returns the integer `21650000`. We can use any methods we want that are associated with that particular datatype:
+
+```{python}
+pop2018[3]*3
+```
+
+```{python}
+megacities[3].upper()
+```
+
+Using square brackets to access an element in a list (or tuple, or set, or dictionary) is called *subscripting*, and is capable of accepting a wider variety of indices than a simple integer. One particularly useful way to subscript an object is to use `slice` notation, where two index positions are separated by a colon:
+
+```{python}
+megacities[0:3]
+```
+
+Using a `slice` to subscript a list returns the item at the first integer's position, plus every item at every position between the it and the second integer. It does *not* return the item indexed by the second integer. To retrieve the last three entries of our list, you would use:
+
+```{python}
+countries[7:10]
+```
+
+You can also use slice notation with one integer missing to return all of the items in a list up to -- or starting at -- a particular index position. The following gives us the first three megacities,
+
+```{python}
+megacities[:3]
+```
+
+and this returns the last seven:
+
+```{python}
+megacities[-7:]
+```
+
+### Looping Over Lists
+
+Python's lists are **iterable** objects, which means that we can **iterate** (or **loop**) over the list's elements to execute code for each one. This is commonly done with a **for loop**. Below, we iterate over the list `megacities` and print each item.
+
+```{python}
+for city in megacities:
+    print(city)
+```
+
+This code creates a *temporary variable* called `city` that is used to refer to the current element of megacities being iterated over. After a full loop, `city` will have been used to refer to each element in the list. The name for this variable should be something descriptive that tells you something about the elements of the list.
+
+### Modifying Lists 
+
+Lists can be changed in a number of ways. We can modify the items in the list like we would other values, such as changing the string `'Mexico City'` to `'Ciudad de México'` using the value's index.
+
+```{python}
+megacities[4] = 'Ciudad de México'
+print(megacities)
+```
+
+We often want to add or remove items from a list. Let's add Karachi to our three lists using the `.append()` method.
+
+```{python}
+megacities.append('Karachi')
+countries.append('Pakistan')
+pop2018.append(16_000_000)
+
+print(len(megacities), len(countries), len(pop2018))
+```
+
+Our lists now contain 11 items each; our Karachi data was appended to the *end* of each list.
+
+You will use `.append()` frequently. It's a very convenient way to dynamically build and modify a list. This book has many examples of creating an empty list that is populated using `.append()`. Let's create a new list that will contain a formatted string for each city.
+
+```{python}
+city_strings = []
+
+for city in megacities:
+    city_string = f"What's the population of {city}?"
+    city_strings.append(city_string)
+
+for city_string in city_strings:
+    print(city_string)
+```
+
+Removing items is just as straightforward. There are a few ways to do it, but `.remove()` is one of the more common ones.
+
+```{python}
+megacities.remove('Karachi')
+countries.remove('Pakistan')
+pop2018.remove(16_000_000)
+```
+
+Sometimes we want to change the organization of a list. This is usually sorting the list in some way (e.g. alphabetical, descending). Below, we make a copy of `megacities` and sort it alphabetically. We don't want to modify the original object, so we explicitly create a new copy using the `.copy()` method.
+
+```{python}
+megacities_copy = megacities.copy()
+megacities_copy.sort()
+print(megacities_copy)
+```
+
+Note that we do not use `=` when we call `.sort()`. This method occurs "in-place", which means it modifies the object it called on. Assigning `megacities_copy.sort()` will actually return `None`, a special value in Python.  
+
+Once we change the order of items in a list using the `.sort()` method, the original order is lost. We cannot 'undo' the sort unless we keep track of the original order. That's why we started by making a copy. To temporarily sort our list without actually changing the order of items in the original list, use the `sorted` function: `sorted(megacities)`. 
+
+When applied to a list of numbers, `.sort()` will reorder the list from smallest to largest.
+
+```{python}
+pop_copy = pop2018.copy()
+pop_copy.sort()
+print(pop_copy)
+```
+
+To sort a list in reverse alphabetical order, or numbers from largest to smallest, use the `reverse=True` argument for `.sort()`.
+
+```{python}
+pop_copy.sort(reverse=True)
+print(pop_copy)
+
+megacities_copy.sort(reverse=True)
+print(megacities_copy)
+```
+
+The fact that lists are *ordered* makes them very useful. If you change the order of a list, you could easily introduce costly mistakes. Let's say, for example, that we sorted our `pop2018` list above. `pop2018`, `megacities`, and `countries` are now misaligned. We have lost the ability to do the following:
+
+```{python}
+print(f'The population of {megacities[4]} in 2018 was {pop2018[4]}')
+```
+
+### Zipping and Unzipping Lists
+
+When you have data spread out over multiple lists, it can be useful to zip those lists together so that all the items with an index of 0 are associated with one another, all the items with an index of 1 are associated, and so on. The most straightforward way to do us this is the use the **`zip()`** function, which is illustrated in Figure @fig:04_02 and the code block below. Clever usage of `zip()` can accomplish a great deal using very few lines of code. 
+
+![](../figures/zip.png)
+
+```{python}
+for paired in zip(megacities,countries, pop2018):
+    print(paired)
+```
+
+The actual *object* that the zip function returns is a 'zip object', within which our data is stored as a series of tuples (discussed later). We can convert these zipped tuples to a list of tuples using the `list()` function.
+
+```{python}
+zipped_list = list(zip(megacities,countries,pop2018))
+print(zipped_list)
+```
+
+It is also possible to unzip a zipped list using the `*` operator and **multiple assignment** (which is also called **'unpacking'**), which allows us to assign multiple values to multiple variables in a single line. For example, the code below returns three objects. We assign each to a variable on the left side of the `=` sign.
+
+
+```{python}
+city_unzip, country_unzip, pop_unzip = zip(*zipped_list)
+print(city_unzip)
+print(country_unzip)
+print(pop_unzip)
+```
+
+### List Comprehensions
+
+Earlier, we created an empty list and populated it using `.append()` in a for loop. We can also use **list comprehension**, can produce the same result in a single line of code. To demonstrate, let's try counting the number of characters in the name of each country in the `countries` list using a for loop, and then with list comprehension. 
+
+```{python}
+len_country_name = []
+
+for country in countries:
+    n_chars = len(country)
+    len_country_name.append(n_chars)
+
+print(len_country_name)
+```
+
+```{python}
+len_country_name = [len(country) for country in countries]
+print(len_country_name)
+```
+
+List comprehensions can be a little strange at first, but they become easier with practice. The key things to remember is that they will always include: 
+
+1. the expression itself, applied to each item in the original list, 
+2. the temporary variable name for the iterable, and 
+3. the original iterable, which in this case is the list.
+
+Above, the expression was `len(country)`, `country` was the temporary variable name, and `countries` was the original iterable. 
+
+We often wish to add conditional logic to our for loops and list comprehensions. Let's create a new list of cities with populations greater than 20,500,000 with the help of the `zip()` function. 
+
+```{python}
+biggest = [[city, population] for city, population in zip(megacities, pop2018) if population > 20_500_000]
+print(biggest)
+```
+
+The result -- `biggest` -- is a list of lists. We can work with nested data structures like this using the same tools we use for flat data structures. For example,
+
+```{python}
+for city in biggest:
+    print(f'The population of {city[0]} in 2018 was {city[1]}')
+```
+
+When should you use a for loop and when should you use list comprehension? In many cases, it's largely a matter of personal preference. List comprehensions are more concise while still being readable with some Python experience. However, they become unreadable very quickly if you need to perform a lot of operations on each item, or if you have even slightly complex conditional logic. In those cases, you should definitely avoid list comprehensions. We always want to ensure our code is as readable as possible.
+
+List comprehension is very popular in Python, so it's important to know how to read it. Since for loops and list comprehension do the same thing in slightly different ways, there is nothing to prevent you from sticking to one or the other, but you should be able to convert one into the other and back again. 
+
+### Copying Lists
+
+Earlier, we copied a list using the `.copy()` method, which is helpful if we want to preserve our original list. Could we accomplish this using the familiar `=` operator?
+
+```{python}
+countries_copy = countries
+print(countries_copy)
+```
+
+This approach *appears* to create a copy of `countries`. This is an illusion. When we copy a list using the `=` operator, we are not creating a new *object*. Instead, we have created a new variable *name* that points to the original object in memory. We have an object with two names, instead of two distinct objects. Any modifications made using `countries_copy` will change the same object in memory described by `countries`. If we Append Karachi to `countries_copy` and print `countries`, we would see Karachi, and vice-versa. If we want to preserve the original list and make modifications to the second, this will not do. 
+
+Instead, we can use the `.copy()` method to create a **shallow copy** of the original list, or `.deepcopy()` to create a **deep copy**. To understand the difference, compare a flat list (e.g. `[1, 2, 3]`) with a list of lists (e.g. `[[1, 2, 3], [4, 5, 6]]`). The list of lists is nested; it is *deeper* than the flat list. If we perform a shallow copy (i.e. `.copy()`) of the flat list, Python will create a new object that is independent of the original. But if we create a shallow copy of the nested lists of lists, Python only makes a new object for outer list; it's only one level deep. The contents of the inner lists `[1, 2, 3]` and `[4, 5, 6]` were not copied, they are only references to the original lists. In other words, the outer lists (length 2) are independent of one another, but the inner lists (lengths 3) are references to the same object in memory. When we are working with nested data structures, such as lists of lists, we need to use `.deepcopy()` if we want to create a new object that is fully independent of the original.  
+
+#### In or Not In?
+
+Lists used in research contexts are usually far larger than the examples in this chapter. They may have thousands, or even millions, of items. To find out if a list contains, or does not contain, a specific value, rather than manually searching a printed list, we can use the `in` and `not in` operators, which will evaluate to `True` or `False`.
+
+```{python}
+'Mexico' in countries
+```
+
+```{python}
+'Mexico' not in countries
+```
+
+These operators can be very useful when using conditions. For example:
+
+```{python}
+to_check = 'Toronto'
+
+if to_check in megacities:
+    print(f'{to_check} was one of the 10 largest cities in the world in 2018.')
+else:
+    print(f'{to_check} was not one of the 10 largest cities in the world in 2018.')
+```
+
+### Using `enumerate`
+
+In some cases we want to access both the item and its index position from a list at the same time. We can do this with the `enumerate()` function. Recall the three lists from the megacity example. Information about each megacity is spread out in three lists, but the indexes are shared across those lists. Below, we enumerate `megacities`, creating a temporary variable for the index position (`i`) and each item (`city`), and iterate over it. We use those values to print the name of the city, and then access information about country and city population using the `index` position. Of course, this only works because the items in the list are ordered and shared across each list.
+
+```{python}
+for i, city in enumerate(megacities):
+    print(f'{city}, {countries[i]}, has {str(pop2018[i])} residents.')
+```
+
+As previously mentioned, we can include *as many lines as we want* in the indented code block of a for loop, which can help us avoid unnecessary iteration. If you have to perform a lot of operations on items in a list of tuples, it is best to iterate over the data structure *once* and perform all the necessary operations rather than iterate over the list multiple times, performing a small number of operations each time. Depending on what you need to accomplish, you might find yourself wanting to iterate on the temporary objects in your for loop. Python allows this! Inside the indented code block of your for loop, you can put *another* for loop (and another inside that one, and so on). When you need to get a lot out of your lists, keep this in mind!
+
+### Tuples, For When Your Lists Won't Change
+
+In Python, every object is either *mutable* or *immutable*. We've just shown many ways that lists are *mutable*: adding and removing items, sorting them, and so on. Any data type in Python which allows you to change something about its composition (number of entries, values of entries) is *mutable*. Data types that do **not** permit changes after instantiation are *immutable*.
+
+Generally speaking, computational social scientists prefer to work with *mutable* objects such as lists. The flexibility we gain by working with a *mutable* data type usually outweighs the advantages of working with *immutable* types -- but not always. In order to convince you to keep **immutable** types in mind, we'll start by introducing its most prolific ambassador: the `tuple`. 
+
+A **`tuple`** is an *ordered*, *immutable* series of objects. You can think of **`tuples`** as a special kind of list that can't be modified once created. In terms of syntax, values in a tuple are stored inside `()` rather than `[]`. We can instantiate an empty tuple in a similar fashion to lists:
+
+```{python}
+my_empty_tuple_1 = ()
+my_empty_tuple_2 = tuple()
+```
+
+That said, an empty `tuple` isn't generally of much use, because it won't ever be anything *but* empty: *immutability* will see to that! Just like with lists, we can instantiate our `tuples` with pre-loaded values:
+
+```{python}
+a_useful_tuple = (2, 7, 4)
+```
+
+We can easily convert between tuples and lists using the `tuple()` and `list()` functions, respectively.
+
+```{python}
+print(type(countries))
+countries_tuple = tuple(countries)
+print(type(countries_tuple))
+```
+
+There are many uses for tuples: if you *absolutely* must ensure that the order of a series of objects is preserved, use a tuple and you can guarantee it. To illustrate, let's use the list method `.sort()` to change the order of items in our countries list. Note that we will use the `.copy()` method to preserve a record of the original order. 
+
+```{python}
+countries_sorted = countries.copy()
+countries_sorted.sort()
+countries_sorted
+```
+
+Great! Now, the countries are in alphabetical order. Nice and tidy -- except for the fact that the `countries_sorted` list is out of order with the `megacities` and `pop2018` lists. Sometimes, in a particularly large project, you might accidentally `sort` a list that shouldn't have been sorted; this might create some serious mismatches in your data, and these mismatches might have a deleterious effect further down the line. To prevent something like this from happening, it's worth considering storing your `lists` as `tuples` instead; that way, if you try to use the `.sort()` method on a `tuple`, Python will throw an error and disaster will be averted. 
+
+`tuples` have a few other advantages over `lists`: for one, using tuples can considerably speed up your code and reduce your memory usage; this is true of most *immutable* data types when compared to their *mutable* counterparts. `tuples` can also be used in some places where *mutable* data structures cannot. You cannot use a `list` as a key for a `dictionary` (more on dictionaries below), as all `keys` must be *immutable*. A `tuple`, works just fine!
+
+Finally, even though lists are *mutable* and tuples are *immutable*, they have another feature in common: they are both *iterable*. Any of the forms of iteration that can be applied to `lists` can be applied to `tuples`, too. 
+
+## Dictionaries
+
+Another Python data structure that you will frequently see and use is the dictionary. Unlike lists, dictionaries are designed to connect pieces of related information. Dictionaries offer a flexible approach to storing **key - value** pairs. Each **key** must be an *immutable* Python object, such as an integer, a float, a string, or a `tuple`, and there can't be duplicated keys. **Values** can be any type of object. We can access values by specifying the relevant key.
+
+Where lists use square brackets `[]`, and tuples use round brackets `()`, Python's dictionaries wrap `key:value` pairs in curly braces `{}`, where the keys and values are separated by a colon `:`, and each pair is separated by a `,`. For example:
+
+```{python}
+tokyo = {
+    'country' : 'Japan',
+    'pop2018': 37_468_000
+}
+
+print(tokyo)
+```
+
+We can use as many keys as we like when we create a dictionary. To quickly access a list of all the keys in the dictionary, we can use the `.keys()` method.
+
+```{python}
+print(tokyo.keys())
+```
+
+To access any given value in a dictionary, we provide the name of the dictionary object followed by the name of the key whose value we want to access inside square brackets and quotes. For example, to access the population from our `tokyo` dictionary,
+
+```{python}
+tokyo['pop2018']
+```
+
+Like lists, but unlike tuples, dictionaries can be modified as we work. We can add a new key-value pair to `tokyo` -- say the population density of the Tokyo Metropolitan Area -- using the same syntax we learned for referencing a key, only we will also assign a value. Because the key we are referencing doesn't exist in the dictionary, Python knows we are creating a new key-value pair, not replacing an old one with a new value. When we print the dictionary, we can see our new pairing has been added.
+
+```{python}
+tokyo['density'] = 1_178.4 
+print(tokyo)
+```
+
+In this case, we started with a dictionary that contained some key-value pairs from when we first defined the dictionary. But we could have also started with an empty dictionary and populated it with key-value pairs using the method we just learned.
+
+```{python}
+delhi = {}
+
+delhi['country'] = 'India'
+delhi['pop2018'] = 28_514_000
+delhi['density'] = 11_312
+
+print(delhi)
+```
+
+### Nested Data Structures
+
+Lists, tuples, and dictionaries can all be nested in a variety of ways, including using using dictionaries as items in a list, lists as items in lists, and lists as items in dictionaries. Other types of nested data structures are also possible. Working with these nested structures is remarkably straightforward. Whatever value you are working with, no matter its position in the nested data structure, you can use the methods appropriate to that type.
+
+If we have a dictionary that has lists as values, we can subscript the values after accessing them with the appropriate key.
+
+```{python}
+japan = {}
+japan['cities'] = ['Tokyo', 'Yokohama', 'Osaka', 'Nagoya', 'Sapporo', 'Kobe', 'Kyoto', 'Fukuoka', 'Kawasaki', 'Saitama']
+japan['populations'] = [37, 3.7, 8.81, 9.5, 2.7, 1.5, 1.47, 5.6, 1.5, 1.3]
+
+print(japan)
+```
+
+
+```{python}
+japan['cities'][4]
+```
+
+### Lists of Dictionaries
+
+We can also store dictionaries as elements in a list. Earlier we created dictionaries `tokyo` and `delhi`. Both contain the same keys: `country` and `population`. Adding them, or any other dictionaries, to a list is straightforward. For example,
+
+```{python}
+top_two = [tokyo, delhi]
+
+for city in top_two:
+    print(city)
+```
+
+While any number of arrangements is possible, things can quickly become very complicated the more deeply data structures are nested. If you find yourself building data structures like this, I suggest that you take a moment to really think about what problem you are trying to solve and assess the approach you are taking. There is almost certainly a way you could approach the problem that is cleaner and simpler, which would reduce the likelihood of making a difficult-to-detect mistake while also making your code more readable.
+
+# Custom Functions
+
+So far we have used a few functions that are built in to Python, such as `print()` and `len()`. In these and other cases, built-in functions take an input, performs some operations, and then returns an output. For example, if we pass the `len()` function a string, it computes the number of characters in that string and returns an integer.
+
+```{python}
+seoul = 'Seoul, South Korea'
+len(seoul)
+```
+
+We could have computed the length of that string without using `len()`, for example:
+
+```{python}
+length = 0
+for character in seoul:
+    length += 1
+print(length)
+```
+
+Both chunks of code compute the length of the string stored in `seoul`, but using `len()` avoids doing unnecessary work. We use functions to take advantage of **abstraction**: converting repeated tasks and text into condensed and easily summarized tools. Modern software is built on decades of abstraction. We don't code in binary because we have abstracted that process, moving into higher-level languages and functions save us time, space, and brain power. This is what you should be capturing when you write your own functions: identify small tasks or problems that you repeat often, and write a function that deals with it so you can focus on more important problems.
+
+Imagine a set of operations that we need to apply multiple times, each time with a different input. You start by picking one of those inputs and writing the code that produces the end result you want. Where do you go from here? One option, *which I do not recommend*, is to copy and paste that code for each of the inputs. Once your code is copied, you change the names of the inputs and outputs so that you get the desired output for each input. 
+
+What happens if you discover a problem in the code, or decide to improve it? You have to change the relevant parts of your code in multiple places, and each time you risk missing something or making a mistake. To make matters worse, the script is *far* longer than it needs to be, and the sequence of operations is much harder to follow and evaluate. 
+
+Instead, we could write our own functions that let us re-use chunks of code. If we discover a problem or something we want to change, then we only have to make the change in one place. When we execute our updated function, it will reliably produce the newly desired output. We can store our functions in a separate script and import them elsewhere, which makes those scripts and notebooks more concise and easier to understand. And, if we use good descriptive names for our functions -- something we will discuss later -- then we can abstract away low-level details to focus on the higher-level details of what we are trying to do. This is always a good idea, but it is especially helpful, if not essential, when working on large projects. 
+
+Writing our own functions, then, is a very powerful way of compartmentalizing and organizing our code. It offers us many of the same advantages of using built-in functions or functions from other packages, while also introducing a few additional benefits:
+
+* reusable -- don't do work that has already been done
+* abstraction -- abstract away low-level details so that you can focus on higher-level concepts and logic
+* reduce potential error -- if you find a mistake you only need to fix it in one place
+* shorter and more readable scripts -- much easier to read, understand, and evaluate
+
+## Writing Custom Functions
+
+To **define** a function in Python, you start with the keyword `def` followed by the name of the function, parentheses containing any arguments the function will take, and then a `:`. All code that is executed when the function is called is contained in an indented block. Below, I define a function called `welcome()`, which accepts a name and prints a greeting.
+
+```{python}
+def welcome(name):
+    print(f'Hi, {name}! Good to see you.')
+```
+
+```{python}
+welcome('Miyoko')
+```
+
+In this case, the function prints a new string to screen. While this can be useful, most of the time we want to actually do something to the input and then **return** a different output. If a function does not **return** an output for whatever reason, it will still return `None`, like the `.sort()` method.
+
+```{python}
+def clean_string(some_string):
+    cleaned = some_string.strip().lower()
+    return cleaned
+    
+cleaned_str = clean_string(' Hi my name is John McLevey.   ')
+print(cleaned_str)
+```
+
+User-defined functions can be as simple or as complex as we like, although you should strive to design functions that are *as simple as possible*. The first and most important step is to know what problem you are trying to solve. If you understand a problem, you can often break it down into smaller sub-problems, some of which might be repeated many times. Rather than write an enormous block of code that handles everything, you can write several sub-functions that individually handle these smaller problems, letting you better organize your approach. 
+
+There is plenty more that could be said about writing your own functions, however we will set any further discussions aside for now. Throughout the rest of this book we will see many examples of custom functions, and you will have many opportunities to write and improve your own.
+
+# Reading and Writing Files
+
+When working with data, you will routinely find yourself reading and writing files to disk. We will cover specifics around the very common `.csv` file format later on, and instead focus on another common file type in computational social science: a text file containing unstructured text. In this case, we will work with a hypothetical text file that contains "Hello World!". 
+
+When we work with external files in Python, we need to do three things, regardless of whether we are reading in, or writing to, a file: (1) open the file; (2) perform some sort of operation; and (3) close the file. 
+
+There are a number of ways to open a file in Python and read its content in memory, but it is best to use an approach that will automatically close a file and free up our computer's resources when we are finished working with it. We will use `with open() as x` for this purpose. 
+
+```{python}
+with open('input/some_text_file.txt', mode='r', encoding='utf-8') as file:
+    text_data = file.read()
+    print(len(text_data))
+```
+
+The `open()` function on requires a file to open, which in this case is `some_text_file.txt`, stored in a directory called `data`. The `with` at the very start tells Python to automatically close the file when we are finished with it. Finally, the `as file` part at the end of the line tells Python to create a file object called `file`, which we use (like other temporary variable names used in this chapter) when we want to actually do something with the file. 
+
+We also passed `open()` two *optional* arguments, `mode` and `encoding`. Technically both of these arguments are optional, but it's generally a good idea to use them. `mode='r'` tells Python to open the file in `read` mode, which is the default behaviour of the `open()` function. There are a number of alternatives, however, including 
+
+* `w` or `write mode`, which allows Python to write to a new file. If a file with the given name exists, Python will overwrite it with the new one, otherwise Python will create a new file.
+* `a` or `append mode`, which allows Python to append new text to the end of a file. If a file with the given name doesn't exist, Python will create a new file.
+* `rb` or `binary mode`, which is helpful when used for file formats with binary data, such as images and videos.
+
+There are other options, and combinations of these options that you can learn about if and when you need to.
+
+We also used the optional `encoding` argument to tell Python to use the `utf-8` encoding. While optional, this is a good habit because default encodings vary across operating systems, and few things are as frustrating and unnecessary as being unable to read a file because of encoding issues. 
+
+After we create the file object, we need to actually perform some operation, such as reading the contents of the file. When *reading* data, there are several methods that we can use, the main choices being `.read()` and `.readlines()`. We use the `.read()` method, which returns the contents of the file as a single string. When we print the length of the string using the `len()` function, Python computes the number of individual characters contained in the string. In this case, it's 0 because the file is empty. Alternatively, we could have used the `.readlines()` method to read the contents of a file one line at a time and add each string to a list.
+
+```{python}
+with open('input/some_text_file.txt', mode='r', encoding='utf-8') as file:
+    list_of_lines = file.readlines()
+    print(len(list_of_lines))
+```
+
+We will see many examples of using `with open() as x` throughout this book, but we will also introduce some other useful approaches, such as reading and writing multiple files at once, reading and writing structured datasets using `csv` and other file formats, and reading and writing data in a common data structure called `JSON`. When you understand the basic logic of opening, processing, and closing files in Python, and when you have a handle on some more specialized methods for working with common data structures, you will be capable of working with any type of data you like, from single text files to directories containing millions of image and video files. Python enables you to do it all!
+
+# Pace Yourself
+
+There is, of course, far more to Python than what we have learned here. But as I have mentioned before, there is no value in being a completionist here -- you can't, and shouldn't, try to start by learning *everything* before you get on to the real research work. As we move through the book, we will introduce additional Python knowledge as it is useful in specific research contexts. This is the way I suggest you continue learn -- focus on building a solid general foundation that covers the basics, and then adopt more complex approaches a acquire new tools when you need them or when they are useful. 
+
+> [Start Box]   
+> **Further Reading**    
+>   
+> As with Linux and open source computing more generally, there is no shortage of great free online resources for learning Python. However, if you are looking for more than what is included here and you want something more carefully scaffolded than what you will find online, I recommend Severance's [-@severance2009python] *Python for Everybody*.
+>
+> [End Box]
+
+# CONCLUSION
+
+## Key Points 
+
+- Fundamentals such as data types, assignment, using methods and functions, comparison and conditional execution, and error handling.
+- Understanding Python's most common built-in data structures -- lists, tuples, and dictionaries -- and how to perform common operations on them, and on the data they store. In doing so, it also introduced the idea of iteration, and showed how to iterate over the items in a list, tuple, or dictionary using for loops and comprehensions. It also introduced indexes and subscripting, and some useful functions such as `zip()` and `enumerate()` that allow us to perform some powerful operations using index positions. 
+- Developing custom functions.
+- How to work with external files in Python.
+

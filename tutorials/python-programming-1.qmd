@@ -1,0 +1,525 @@
+---
+title: "Python Programming: The Basics"
+description: "This tutorial notebook is a version of Chapter 2, 'Python Programming: The Basics,' in John McLevey (2024) *Doing Computational Social Science: A Practical Introduction*. London, UK: Sage."
+author:
+  - name: John McLevey
+    url: https://johnmclevey.com
+    email: john.mclevey@uwaterloo.ca
+    corresponding: true
+    affiliations:
+      - name: University of Waterloo
+date: "08/26/2024"
+date-modified: last-modified
+categories:
+  - Python
+  - GESIS
+  - computational social science
+  - data science
+tags:
+  - Python
+  - GESIS
+bibliography: references.bib
+reference-location: margin
+citation-location: margin
+freeze: true
+license: "CC BY-SA"
+---
+
+
+# LEARNING OBJECTIVES
+
+By the end of this chapter, you should be able to:
+
+- Understand and use basic data types in Python (strings, integers, floats, and Booleans)
+- Understand and use assignment for objects 
+- Understand and use methods for manipulating strings 
+- Understand and use comparison and control flow to perform conditional execution
+- Understand how to read and learn from the `Tracebacks` Python produces when something interrupts the execution of your code, such as an error 
+- Use `try / except` to handle exceptions and other potential interruptions to the execution of your code.
+
+
+# INTRODUCTION
+
+It's time to start writing Python code! Make sure to open a Jupyter notebook or a python console and follow along as you work through this chapter. If you load up the supplementary learning materials as described in Chapter 2, you'll find a series of chapter specific Jupyter Notebooks to get you started. You'll want to use `chapter_03_notes.ipynb` as you work through this chapter, or alternatively you can create your own empty notebook. After you've worked through the chapter, you can deepend and test your knowledge by completing the problem sets in `chapter_03_problem_sets.ipynb`. Other chapters will also use this `_notes` and `_problem_sets` naming convention, to keep things simple. 
+
+Our primary goal in this chapter is to lay a foundation of general Python knowledge. We'll start with the basics: data types, assignment, using methods and functions, control flow, and handling errors. What you learn here is not specific to scientific computing, but you will find yourself using this knowledge *constantly*. Thus, you don't necessarily need to have "mastered" this content before moving on. You will have plenty of opportunities to practice your Python programming as you progress through the book. You can always come back to this chapter if you need a refresher.
+
+
+# LEARNING PYTHON
+
+Python is designed to maximize human readability, and as a consequence it's common to *feel* that you have a good understanding of something because the code on the page makes sense and seems obvious, only to find yourself at a loss when you try to write the same code yourself. That's totally normal. You must resist the temptation to copy and paste. You *will* understand more, identify what you don't understand, and gain mastery faster, if you actually type the code out yourself. Your future self will thank you. 
+
+If you are new to Python but have some experience doing scripted data analysis in another language, I suggest that you approach Python as if you were a beginner. It is common to start working in Python by "translating" your R or Stata scripts into Python, for example. While there are many generic programming concepts that are used in those languages and many others, most efforts to "translate" your scripts will lead to writing poor Python code and will slow down your learning, causing problems later. While a certain amount of this is unavoidable, you will benefit from minimizing it. When you are working in Python, it is generally better to embrace doing things the "Pythonic" way.
+
+# Python Foundations
+
+## Basic Data Types and Expressions
+
+Every value in Python has a single data type. The key data types to know are **integers** (e.g. `42`), **floats** (e.g. `42.0`), and **strings** (e.g. `'The Hitchhiker's Guide to the Galaxy'` or `'cats are the best'`). Strings are sequences of characters that are wrapped in single or double quotes. They both work the same way, but you must be consistent when starting and ending a string, and you can't use quotes of one type inside quotes of the same type. Having the option for both enables us to include quotes and apostrophies within a string.
+
+```{python}
+"That's correct."
+```
+
+```{python}
+'My teacher said, "That is correct."'
+```
+
+An **expression** consists of two or more values joined by an operator. The following examples use Python like a calculator.
+
+```{python}
+2 + 2 # Addition
+```
+
+```{python}
+2 * 9 # Multiplication
+```
+
+```{python}
+10 / 2 # Division
+```
+
+```{python}
+2 ** 6 # Exponential
+```
+
+```{python}
+2 + 9 * 7
+```
+
+Python has mathematical operators for addition, subtraction, multiplication, division, floor division, exponents, and modulus / remainder when working with numbers. Given expressions with multiple operators, Python follows the conventional mathematical order of operations. 
+
+Some of these operators can also be used to perform operations on strings, but they represent different things. For example, when used in an expression with two strings, the `+` operator performs **string concatenation** by joining the two strings together. We demonstrate this below. The following expression is contained inside a `print()` function, appropriately, prints the result inline for notebooks or to the screen if you are executing scripts).
+
+```{python}
+print('Miyoko is interested in ' + 'a career in data science.')
+```
+
+Python can determine whether `+` should be addition or string concatenation based on context: whether both items being operated on are strings or numbers. However, Python will throw an error if you try to add, or concatenate, a number and a string. To demonstrate, create a new code cell and type `42 + 'is the answer'`. You will see an error message -- a "Traceback" -- print below the code cell. We will discuss errors and how to interpret them later. If you wrap the `42` in quotes and execute the cell again, you will see that Python now treats `42` as a string and performs concatenation.
+
+```{python}
+42 + 'is the answer'
+```
+
+```{python}
+'42 ' + 'is the answer'
+```
+
+We can also convert numbers to strings with the str() function. Notice the lost whitespace we had with "42 ".
+
+```{python}
+str(42 )  + 'is the answer'
+```
+
+We can also use the `*` operator with strings, where it becomes a **string replicator**, which requires a string and an integer For example,
+
+```{python}
+print('Sociology ' * 5)
+```
+
+## Variables and Assignment
+
+We can store data in 'variables' by 'assignment', indicated by the `=` operator. We can call variables anything we want, provided:
+
+1. we only use numbers, letters, and the underscore character (`_`); 
+2. we don't start the name with a number; and 
+3. we do not use any special words that are reserved for Python itself (e.g. `class`). 
+
+Use descriptive names for your variables (e.g. call the variable storing your last name as a string `last_name`, not `ln`). It makes your code much more readable and easier for you, or your collaborators, to understand after a bit of time has passed.
+
+You can think of a variable as a labeled container that stores specific information. In the example below, the container has a 'label' called `a_number` and stores the integer value 16:
+
+```{python}
+a_number = 16
+print(a_number)
+```
+
+Once you have created a variable, you can use it in expressions. For example:
+
+```{python}
+a_number * a_number
+```
+
+```{python}
+city = 'Cologne'
+country = 'Germany'
+
+print(city + country)
+```
+
+```{python}
+print(city + ' is the fourth-most populous city in ' + country)
+```
+
+We are not limited to printing the results of an expression. We can save our results in a new variable.
+
+```{python}
+sentence = city + ' is the fourth-most populous city in ' + country
+print(sentence)
+```
+
+## Objects and Methods, Illustrated with Strings
+
+Python is an **"object-oriented" language**, which means that it performs computations using "objects." An in-depth discussion of object-oriented programming is beyond the scope of this book, but you should understand a few simple concepts. To illustrate, let's use a silly but informative analogy. I have two cats, Dorothy and Lando Catrissian, who know how to perform various actions, like squeezing into small cardboard boxes to take a nap, drinking from a trickling faucet, lying directly on my keyboard while I am using it, and tearing up yoga mats with their claws if you walk away from the mat for more than 2 minutes. Dorothy and Lando are both specific "instances" of the general "class" of cats. As cats, they have some special procedures they can perform, including those listed above. 
+
+In Python, (almost) *everything* is an object of one kind of another. Like Dorothy and Lando, **objects** are specific instances of more general **classes**. Being are specific instances, they typically have a name that differs from their class; the `sentence` object is an instance of the `string` class. Objects are capable of a variety of actions -- called **`methods`** -- that they share with other objects of the same class. In Python, strings have methods for switching between cases, checking for the presence of a value, replacing one substring with another, and many more. As computational social scientists, we frequently work with real-world text data; Python's `string` methods are indispensable for doing so. To learn about a particular class and its methods, you can usually check online documentation, use Jupyter's `?` function (e.g., `a_number?`), or Python's `dir()` function (e.g., `dir(a_number)`).
+
+### Changing Case
+
+The examples below illustrate some common string manipulation tasks. Any time we use a method, we provide the name of the object followed by a `.` and the name of the method. For example, to change the case of the characters in a string, we can use the `.upper()`, `.lower()`, and `.title()` methods. Let's try on the `city` variable from earlier:
+
+```{python}
+city.upper()
+```
+
+```{python}
+city.lower()
+```
+
+```{python}
+city.title()
+```
+
+Technically, the `.upper()` and `.lower()` methods don't actually change the string itself, they create a new string. The code above printed those new strings, but Python did not change the string contained in `city`. To do that, we need to overwrite `city` with the new string.
+
+```{python}
+print(city)
+city = city.upper()
+print(city)
+```
+
+We can also check whether a string contains another string. To check whether the variable `sentence` contains the string "Germany", we can use the `in` operator. Python will return `True` if "Germany" is in `sentence` or `False` if it is not.
+
+```{python}
+'Germany' in sentence
+```
+
+We can also use the `.index()` method to return the starting index position for where a substring -- `city` -- appears in a string -- `sentence`. If the substring is not in the string, this method will throw an error.
+
+```{python}
+sentence.index('Germany')
+```
+
+To replace one substring with another substring, we can use the `.replace()` method. For example, to replace Cologne with Köln:
+
+```{python}
+sentence = sentence.replace('Cologne', 'Köln')
+print(sentence)
+```
+
+### Joining and Splitting Strings
+
+When working with strings and other text data, you will often find yourself needing to split a string up into multiple pieces, or to join things together into a specific string. If we use the `split()` method on a string with no arguments, it will split the string on whitespace and return something called a list.
+
+```{python}
+sent_split_1 = sentence.split()
+print(sent_split_1)
+```
+
+Alternatively, we can tell the `.split()` to split a string at specific substrings.
+
+```{python}
+sent_split_2 = sentence.split('populous')
+print(sent_split_2)
+```
+
+```{python}
+sent_split_3 = sentence.split('-')
+print(sent_split_3)
+```
+
+To join these items back into a single string, we use `.join()`. To use this method, we first provide the `separator` we want `.join()` to place between the items, and then pass the items we want to reassemble into a string.
+
+```{python}
+joined = " ".join(sent_split_1)
+joined
+```
+
+```{python}
+also_joined = "-".join(sent_split_1)
+also_joined
+```
+
+### Removing Whitespace
+
+Strings containing text data from the real-world -- which appear frequently in this book -- often have a lot of whitespace. To remove this whitespace, we can use the `.strip()`, `.lstrip()`, or `.rstrip()` methods to strip out extra whitespace from the whole string (not including the spaces between words), or from the beginning or end of the string.
+
+```{python}
+with_whitespaces = '   This string has     extra whitespace. '
+print(with_whitespaces)
+```
+
+```{python}
+print(with_whitespaces.strip())
+```
+
+```{python}
+print(with_whitespaces.lstrip())
+```
+
+```{python}
+print(with_whitespaces.rstrip())
+```
+
+### Putting Strings Inside of Other Strings with the `.format()` Method and f-string
+
+While we can use `+` for string concatenation, it is usually better to use Python's built in tools for string formatting. One such tool is the appropriately named string formatting method called `format()`. The easiest way to understand how string formatting works is to see it in action, so let's look at a few examples. In the examples below, we will use the information stored in the variables `city` and `country`.
+
+```{python}
+a_string = "{} is the fourth-most populous city in {}."
+print(a_string.format(city.title(), country))
+```
+
+The string on Line 1 includes two `{}`s, and the `format()` method on Line 2, has two arguments -- `city.title()` (recall that `.title()` produces a string with characters in title case) and `country`. When executed, the method replaces the first `{}` with the value of `city.title()` and the second `{}` with the value of `country`.
+
+We can also do this in a cleaner way. We can put an `f` before our string to tell Python to use an **f-string**, which enable us to include the name of the variable containing the relevant value inside each `{}`.
+
+```{python}
+print(f"{city.title()} is the fourth-most populous city in {country}.")
+```
+
+In Python, a string can be as short as zero characters ("" contains no characters, but is a valid string), or arbitrarily long (provided it fits in your system's memory). Sometimes, you'll want to create or manipulate longer strings, such as the chapter of a book or the entirety of a congressional report. In such cases, it's possible to preserve a long text's layout using 'newline' characters (`\n`) everywhere there's a paragraph break in the text. As you can imagine, however, this gets messy very quickly. Luckily, Python has a built-in syntax for representing multi-line strings: three single (`'''`) or double (`"""`) quotation marks in a row.
+
+```{python}
+multiline_string = """
+You can work with strings longer than War and Peace, if you want.
+
+The strings can contain line breaks.
+"""
+
+print(multiline_string)
+```
+
+Let's set strings aside for now. We will return to them with some more advanced concepts later in the book.
+
+## Comparison and Control Flow
+
+We know how to tell our computer to execute individual instructions, (e.g. evaluate `2 + 2`). However, we often don't want our computer to simply execute a series of individual instructions top to bottom. Instead, we want to be able to tell our computer to execute code *depending on one or more conditions*. This is called '**control flow**'.
+
+Control flow statements include a '**condition**' that can be evaluated to either `True` or `False` (these are Boolean values, after the mathematician George Boole), followed by a '**clause**' which is an indented block of code to execute depending on whether the condition evaluates to `True` or `False`. In other words, we will execute the clause code *if the condition returns `True`* and skip over that code if the expression evaluates to `False`. Usually, the condition contains one or more of the **comparison operators** in Table 3.1.
+
+| Comparison Operator | Means |
+|---------------------|-------|
+| `==` | Equal to |
+| `!=` | Not equal to|
+| `>` | Greater than |
+| `>=` | Greater than or equal to|
+| `<` | Less than |
+| `<=` | Less than or equal to |
+
+Table: Python Comparison Operators
+
+All of the comparison operators in Table 3.1 will resolve an expression to a Boolean value. 
+
+```{python}
+country == country.upper()
+```
+
+```{python}
+country != country.upper()
+```
+
+```{python}
+country == country
+```
+
+```{python}
+23 < 33
+```
+
+```{python}
+33 >= 33
+```
+
+We can use these comparison operators to execute code *conditionally*. Let's make this less abstract with a simple example that uses an **if statement**.
+
+### If, Elif, Else
+
+An `if` statement starts with `if`, followed by an expression that can be evaluated to `True` or `False` and a colon `:`. The expression is the *condition*, and the colon indicates that what follows will be the *clause*: the indented code to run if the condition is `True`. 
+
+The cell below illustrates control flow using a simple `if` statement. It executes the same if-statement on two variables, checking if a variable has the value 'Cologne' and printing a string if the condition evaluates to `True`. 
+
+```{python}
+if city == 'COLOGNE':
+    print("city has the value: 'COLOGNE'")
+else:
+    print("city does not have the value: 'COLOGNE'")
+if country == 'Cologne':
+    print("country has the value: 'COLOGNE'")
+else:
+    print("country does not have the value: 'COLOGNE'")
+```
+
+Notice that we have included another line of code; an `else` statement indicates that if the previous condition does not evaluate to `True`, Python should execute the indented clause code under `else`. In this case, we use the `else` statement to indicate when a variable did not match the condition.
+
+Let's examine that `==` operator more closely. 
+
+```{python}
+if 'doing computational social science' == 'Doing Computational Social Science':
+    print("The second two strings are equal to each other!")
+if 'doing computational social science ' == 'doing computational social science':
+    print("The first two strings are equal to each other!")
+if 'doing computational social science' == 'doing computational social science':
+    print("The third two strings are equal to each other!")
+```
+
+There are a few things to note here. First, Python cares differences in capitalization (the first if-statement) and whitespace (the second if-statement) when comparing strings. `'doing'`, `'Doing'`, and `'Doing '` are all different strings. 
+
+This might seem frustrating at first, but Python's capacity for specificity can pay dividends. We can also anticipate these issues and use some string manipulation methods to exert a bit more control over the comparison. For example, we can enforce title case and strip out white space using the string methods we just learned.
+
+```{python}
+if 'doing computational social science '.title().strip() == 'Doing Computational Social Science':
+    print("These two items are equal to one another!")
+else:
+    print("These two items are NOT equal to one another.")
+```
+
+In this example, there are only two options: if the strings are equal, do one thing, if not do another. We can use `elif`, or *else-if statements*, to introduce code to execute on different conditions. Note that using an `elif` statement is functionally equivalent to nesting an if-statment within the clause of an else-statement. It will only run if a previous condition has evaluated to false. 
+
+```{python}
+we_do_sentence = "We're doing learning control flow"
+learning_string = "learning control flow"
+
+if we_do_sentence == learning_string:
+    print("These two strings are equal to each other!")
+elif learning_string in we_do_sentence:
+    print("The second string is in the first string, but they are not equal to each other.")
+else:
+    print("The two strings are NOT equal to each other and the second string is NOT in the first string.")
+```
+
+We can read this code as following this logic: if the first condition is `True`, then execute the first print statement. If the first condition is false, check if the second condition is `True`. If it is, execute the second print statement. If the preceeding if- and elif-statements were all `False`, then execute the final print statement.
+
+Also note that we used strings that contain `'`, such as `We're`. If we used single quotes to open and close those strings, Python will throw an error, because it interprets the `'` in `'s` as indicating the end of the string. If your string contains a `'`, then you need to open and close the string with double quotes `"`, and the reverse is true.
+
+Very importantly, the indentation in our code is meaningful. All indented code following a `condition` is a `clause` and will only be executed when the condition is met. Jupyter, VS Code, and other IDEs and Text Editors generally do a good job of managing indentation for you as you write your code, but you can still make mistakes. This is a double-edged sword: by making indentation syntax-relevant, Python has eliminated the need for much of the explicit statement formatting required by other languages and is thus far easier to read; in doing so, it demands that we be vigilant about finnicky indentation levels, lest our code execute incorrectly.
+
+### While Loops
+
+`if` statements are probably the most common type of statements used in control flow, but they are not the only ones. We can also use a `while` statement to conditionally execute code. A `while` statement starts with the word `while` and is followed by an expression that can be evaluated down to `True` or `False`. You can read a while-loop as if it were saying "If `condition` is `True`, execute `clause`. Repeat this process until `condition` is `False` or told to stop.
+
+In the following example, we will use a while loop to print a string until we have reached the end of a course. In plain language, we say "while the current week is less or equal to the last week, print "The course  is still in progress" and increase the week by 1. 
+
+```{python}
+week = 1
+
+while week <= 12:
+    print(f"It's Week {week}. The course is still in progress.")
+    week += 1 # equivalent to `week = week + 1
+
+print('\nThe course is "complete". Congratulations!')
+```
+
+Remember that the *indentation is meaningful*; because the last line is not indented, Python knows it is not part of the while loop and only runs it when the while loop has completed. 
+
+Also, note that line 5 contains a **comment**. Comments in Python start with `#`. Anything on the line after the `#` is not considered code and will not be executed. Comments can be very useful to include in your code. You should use comments to remind yourself what certain chunks of code do. However, as you become more comfortable with Python, you will want to avoid writing comments that translate the code into ordinary language and instead write comments that remind your future self -- or inform a collaborator -- about what you were trying to do, or what you were thinking at the time. These tend to be much more useful comments than descriptive translations, which become less helpful as your Python skills develop. 
+
+A third thing to notice is that, unlike the `if` clause from above, this example is a **loop**. If the condition on Line 3 evaluates to `True`, the clause (the code block on Lines 4 and 5) will be executed over and over again until Line 3 evaluates to `False`, at which point Python exits the loop.
+
+You may already be anticipating this, but it is possible to write your code in a way that leads Python into an **infinite loop**, in which it keeps executing the same code over and over again... forever, or until something unexpected interrupts it, like a power outage. Infinite loops are caused when the condition always evaluates to the same value. For example, if we forgot to include the `+` in the `+=` on Line 5 of the example above, then Python would not add `1` to the variable `week`. Instead, it would simply keep re-assigning `1` to `week`, Line 3 will always evaluate to `True`, and Python is stuck in an infinite loop. To get out of an infinite loop, press `control+c`. If you are in a Jupyter Notebook, press the stop button to interrupt the kernel.
+
+### Combining Comparisons with Connectives
+
+It's a bit of a mouthful, but it can be useful to combine comparisons in a condition with connectives such as `and` or `or` to exert even more control over the code that is executed under various conditions. For example, to use the `and` connective in a conditional:
+
+```{python}
+book = 'Doing Computational Social Science'
+if len(book) > 30 and book == 'Doing Computational Social Science':
+    print("Correct! That's the name of this book")
+```
+
+The conditional on Line 1 above uses `and` to chain together two comparisons. When using `and`, the line will evaluate to `True` if *both* comparisons are `True`. If one of them evaluated to `False`, then the line evaluates to `False`.
+
+Alternatively, we could use the `or` connector. Below, Line 1 evaluates to `True` if *either* of the two comparisons evaluate to `True`. Obviously the code executes without returning an error even though there is a "mistake" in this code: not every string longer than 30 characters is the name of this book!
+
+```{python}
+if len(book) > 30 or book == 'Doing Computational Social Science':
+    print("Correct! That's the name of this book")
+```
+
+It might sound a bit strange, but we can also use `not` to make an expression return `True` (and therefore execute a clause) if it evaluates to `False`.
+
+```{python}
+if not book == 'Doing Computational Social Science':
+    print("Sorry, that's not the name of this book")
+```
+
+It is possible to combine as many comparisons as you like, though this can make your code a little more difficult to read. The convention in Python is to wrap each comparison in `()`, which makes the code cleaner and easier to read.
+
+```{python}
+if (len(book) > 30 and len(book) < 100) or (book == 'Doing Computational Social Science'):
+    print("Correct! That's the name of this book")
+```
+
+## Tracebacks
+
+Sometimes, something goes wrong with our code.  When errors occur, Python will provide a special report called a `Traceback` that identifies what the nature of the problem was and where it was encountered. `Traceback` reports can contain a lot of information and may be a bit overwhelming at first, but if you understand *what* Python is providing and why it is providing it, you can diagnose problems with your code and, over time, become a better Python programmer.
+
+In general, you should read a `Traceback` from the bottom up. The final line of the `Traceback` tells you what kind of problem, or Python encountered, as well as an `error message` that helps you understand why the exception was raised. Lines that appear earlier in the `Traceback` show you where in your code the error occurred. Depending on your code, the `Traceback` may be short and concise, or long and nested. 
+
+At this point, the `Traceback`s that you are most likely to encounter are `NameError`s (you use a variable that is not yet defined), `TypeError`s (you perform an operation on an incorrect datatype), and `SyntaxError` (you broke Python's grammar rules). We saw an example of a ValueError earlier, when we tried to use `+` on a string and an integer.
+
+### `Try` / `Except`
+
+We can distinguish between at least two classes of error. If code has broken one of the grammar rules of Python, like not properly closing brackets, you will get a **syntax error**. An **exception** occurrs when syntactically correct code still manages to produce an error. While both are errors, syntax errors are detected while the code is being parsed, *before* the code is executed, resulting in it not running at all. Exceptions occur during execution and *may* not cause the execution to fail.
+
+When it encounters an `exception` of any type, Python's default behaviour is to halt execution of your code and provide you with a `Traceback`. While this is a often a useful feature, it isn't always what we want. Sometimes, we know that some of the code we've written is likely to encounter a *very particular* type of error, and we would rather Python handle the error in some way and continue executing the rest of our code. In these cases, we can use `try` and `except` statements. In general, you should not use try/except to handle syntax errors. It's usually impossible because, as mentioned, the syntax error will halt execution before it even attempts to execute the code. 
+
+The `try` statement is used before an indented block of code, and it indicates that Python should attempt to execute the code in the indented block. When Python encounters an error whilst executing code contained within a `try` block, it doesn't immediately halt execution: instead, it first checks all of the following `except` statements to see if the exception it has encountered is listed (e.g. `except KeyError:`). If so, Python then executes the code in the pertinent `except` block before carrying on as normal. Let's consider an example. 
+
+Let's expand on the example we used for the `while` block. Rather than assuming that users will always start from the first week, let's pretend the code now allows users to input the week they wish to start from, so long as it's one of the first three weeks. We have stored our hypothetical user's input in the `user_input` variable. If its value is an integer equal to or lesser than 12, you'll see one line of printout for each of the remaining weeks. What happens if the user had typed in "seven" instead of a number? 
+
+```{python}
+print("Please enter which week you will start in.")
+user_input = "seven"
+week = int(user_input)
+
+while week <= 12:
+    print(f"It's Week {week}. The course is still in progress.")
+    week += 1 # equivalent to `week = week + 1
+
+print('\nThe course is "complete". Congratulations!')
+
+```
+
+You should see a `ValueError` exception. This makes sense. Python isn't inherently aware of how to interpret the string `seven` as an integer, and even though it *can*, we have not told it to do so. We can use `try` and `except` to catch some of the cases of the value error without sacrificing any of our original functionality. To do this, we'll have to start by figuring out where the error is coming from. We can do this by using the `Traceback` Python printed when it encountered the exception: looks like line 4 is the culprit. Let's try wrapping that line in a `try` block, and then using `except ValueError` plus some hand-written string comprehension to handle the error. Let's assume that people can only start the course in the first three weeks, and account for those in our `try` block:
+
+```{python}
+print("Please enter which of weeks.")
+user_input = "three"
+try:
+    week = int(user_input)
+
+except ValueError:
+    if user_input.lower().strip() == "one":
+        week = 1
+    elif user_input.lower().strip() == "two":
+        week = 2
+    elif user_input.lower().strip() == "three":
+        week = 3
+    else:
+        raise ValueError("I don't recognize that as a valid number! Try again!")
+    
+
+while week <= 12:
+    print(f"It's Week {week}. The course is still in progress.")
+    week += 1 # equivalent to `week = week + 1
+
+print('\nThe course is "complete". Congratulations!')
+```
+
+Notice that the `else` statement, if executed, re-raises `ValueError` (albeit with a different message). Rather than assume your workaround will work in every case, it's good practice to manually raise an `exception` if all else fails; that way, Python will have a way of letting you know that your fix was a bust, and that it's time to head back to the drawing board. 
+
+When used judiciously, `try` and `except` are invaluable tools that will serve you well. That said, `try` and `except` -- like many of the tools we will cover in this book -- are prone to abuse. If you don't specify an individual `exception` after your `except` statement, your `try`/`except` will cover *all* possible exceptions. When a deadline looms, the clock has struck 4am, and you're at your wits' end trying to hunt down the one error-throwing bug preventing your code from executing, the siren song of `try` and `except` may be very tempting. Simply wrap all of your code in a `try` statement, and provide a wildcard `except` at the end. Poof! No more errors! Problem solved, right? 
+
+Sadly no. In Python programming as in life, errors occur for a reason: *something is wrong*. If you don't know what's causing an error, you **should not trust your code**. Code that cannot be trusted is worthless at best, and potentially harmful. Avoid doing this at all costs.
+
+# CONCLUSION
+
+## Key Points 
+
+- Python is an easy-to-use general-purpose programming language that features an extensive array of community-made open-source packages for data science and machine learning
+- We explored a few of Python's built-in methods and functions for string processing/manipulation 
+- We covered some Python fundamentals such as data types, assignment, using methods and functions, comparison and conditional execution, and error handling.
+- Our Python journey continues in the next chapter!
+

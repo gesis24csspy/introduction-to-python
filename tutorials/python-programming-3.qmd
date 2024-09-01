@@ -1,0 +1,652 @@
+---
+title: "Processing Structured Data"
+description: "This tutorial notebook is a version of Chapter 6, 'Processing Structured Data,' in John McLevey (2024) *Doing Computational Social Science: A Practical Introduction*. London, UK: Sage."
+author:
+  - name: John McLevey
+    url: https://johnmclevey.com
+    email: john.mclevey@uwaterloo.ca
+    corresponding: true
+    affiliations:
+      - name: University of Waterloo
+date: "08/26/2024"
+date-modified: last-modified
+categories:
+  - Python
+  - GESIS
+  - computational social science
+  - data science
+tags:
+  - Python
+  - GESIS
+bibliography: references.bib
+reference-location: margin
+citation-location: margin
+freeze: true
+license: "CC BY-SA"
+---
+
+
+# LEARNING OBJECTIVES
+
+- Use Pandas to load, manipulate, and summarize data
+- Preview data using head, tail, and sample
+- Understand Pandas data structures (Series and dataframes), indexes, and `datetime` objects
+- Extract subsets of a dataset by selecting columns and filtering rows
+- Group observations in a dataframe and perform operations on groups to enable systematic comparisons
+- Combine multiple dataframes by row and by column
+- Understand the power (and pitfalls) of record linkage
+
+# LEARNING MATERIALS
+
+You can find the online learning materials for this chapter in `doing_computational_social_science/Chapter_07`. `cd` into the directory and launch your Jupyter Server.
+
+# INTRODUCTION
+
+It's time to shift from using Python as a general programming language to using it to process data using specialized data management and analysis packages. We are going to rely primarily on two packages from a collection of packages widely referred to as Python's "scientific stack." The first is Pandas, which was created by Wes McKinney for analyzing **pan**el **da**ta (hence the name). It comes with special data structures, functions, and methods that you can use to take care of the vast majority of data processing operations for structured quantitative data. The second is Numpy, which is a lower-level package for efficient computation and maths. Numpy is the foundation that many other packages, including Pandas, are built on. We're not going to cover Numpy in any significant detail here, but it's worth knowing that Numpy provides arrays of arbitrary size and dimensionality, and is one of the pillars upon which Pandas is built. 
+
+In this chapter, I will start with the basics of getting data in and out of Pandas dataframes, and previewing subsets of data. Next, I will dig deeper into Pandas core data structures (Series and dataframes), as well as `index` and `datetime` objects. I then discuss more advanced operations, such as grouping data for systematic comparisons, working with `datetime` objects for time series analysis, and combining dataframes.
+
+Pandas is a very large and complex package with an enormous amount of power, but you don't have to learn it all at once. In fact, you shouldn't even try! Like most other packages you will encounter in this book, you will use a small number of features very heavily, and a large number of features very rarely. 
+
+## Imports
+
+```{python}
+import pandas as pd
+```
+
+## PRACTICAL PANDAS: FIRST STEPS
+
+### Getting Data into Pandas
+
+The Pandas package makes it easy to load data from an external file directly into a `dataframe` object. It uses one of many reader functions that are part of a suite of **I/O (input / output, read / write) tools**. I've listed some common examples in the table below. Information on these and other reader functions can be found in the Pandas [documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html), which also provides useful information about the parameters for each method (e.g. how to specify what sheet you want from an Excel spreadsheet, or whether to write the index to a new CSV file). 
+
+| Data Description                | Reader         | Writer       |
+| :------------------------------ | :------------- | :----------- |
+| CSV                             | `read_csv()`   | `to_csv()`   |
+| JSON                            | `read_json()`  | `to_json()`  |
+| MS Excel and OpenDocument (ODF) | `read_excel()` | `to_excel()` |
+| Stata                           | `read_stata()` | `to_stata()` |
+| SAS                             | `read_sas()`   | NA           |
+| SPSS                            | `read_spss()`  | NA           |
+
+Table: I/0 Methods for Pandas
+
+I will focus on the `read_csv()` function to demonstrate the general process. The only *required* argument is that we provide the path to the file location, but there are many useful arguments that you can pass, such as the file encoding. By default, Pandas assumes your data is encoded with UTF-8. If you see an encoding error or some strange characters in your data, you can try a different encoding, such as latin1.
+
+This chapter will use data from the Varities of Democracy (VDEM) dataset. VDEM is an ongoing research project to measure the level of democracy in governments around the world and updated versions of the dataset are released on an ongoing basis. The research is led by a team of over 50 social scientists who coordinate the collection and analysis of expert assessments from over 3,200 historians and Country Experts (CEs). From these assessments, the VDEM project has created a remarkably complex array of indicators designed to align with five high-level facets of democracy: electoral, liberal, participatory, deliberative, and egalitarian. The dataset extends back to 1789 and is considered the gold standard of quantitative data about global democratic developments. You can find the full codebook online, and I strongly recommend that you download it and consult it as you work with this data. You can find the full dataset at (https://www.v-dem.net/en/data/data/v-dem-dataset-v11/) and the codebook here (https://www.v-dem.net/media/filer_public/e0/7f/e07f672b-b91e-4e98-b9a3-78f8cd4de696/v-dem_codebook_v8.pdf). The filtered and subsetted version we will use in this book is provided in the `data/vdem` directory of the online learning materials.
+
+Let's load the CSV file into a Pandas `dataframe`.
+
+```{python}
+df = pd.read_csv('input/V-Dem-CY-Full+Others-v10.csv', low_memory=False)
+```
+
+Once you have your data loaded, one of the first things you will want to know is how many rows and columns there are. You can do this using the `.shape` attribute of the dataframe.
+
+```{python}
+df.shape
+```
+
+This is a fairly large dataset. It has 27,013 observations and 4,108 variables! First, I will construct a new dataframe *from this one* that contains only the columns I want. 
+
+### What Do You Need? Selecting Columns
+
+I will create a list of the variable names I want to retain, and call the original dataframe followed by the name of the list in square brackets. In this case, I will retain the following variables:
+
+1. the country name,
+2. the country ID, 
+3. the geographic region,
+4. the year,
+5. the polyarchy index,
+6. the liberal democracy index,
+7. the participatory democracy index, 
+8. the deliberative democracy index, and
+9. the egalitarian democracy index,
+10. whether Internet users’ privacy and their data is legally protected,
+11. how polarized the country is on political issues, and
+12. levels of political violence.
+13. whether or not the country is a democracy<!-- e_boix_regime -->
+
+I will call the new dataframe `sdf`, for 'subsetted dataframe.' Of course, you can call it anything you like. If you are going to be working with multiple dataframes in the same script or notebook, then it's a good idea to give them much more descriptive names. For now, I am only working with two, so I will use `df` for the full dataframe and `sdf` for the dataframe with a subset of the original variables. I will make careful note of any dataframes I add.
+
+```{python}
+subset_vars = ['country_name', 'country_text_id', 'e_regiongeo', 'year', 'v2x_polyarchy', 'v2x_libdem', 'v2x_partipdem', 'v2x_delibdem', 'v2x_egaldem', 'v2smprivex', 'v2smpolsoc', 'v2caviol', 'e_boix_regime']
+sdf = df[subset_vars]
+sdf.shape
+```
+
+We've created a new dataframe called `sdf`. It still has 27,013 rows, but only 13 variables. We can print their names using the `.columns` attribute for the dataframe.
+
+```{python}
+list(sdf.columns)
+```
+
+#### What's in Your dataframe?
+
+We can use the `.info()` method to see: the total number of observations, the total number of columns, the names of the columns, the number of non-missing observations for each, the datatype for each variable, the number of variables that contain data of each type (e.g. integers and floats), and the total amount of memory used by the dataframe. 
+
+```{python}
+sdf.info()
+```
+
+The datatypes in this dataframe are **`float64`** (numbers with decimals), **`int64`** (integers), and **`object`**. In Pandas, `object` refers to columns that contain `strings`, or mixed types, such as `strings` and `integers` (`object` encompasses many more things, too: it's a catchall category). Pandas can also work with booleans (True or False), categorical variables, and some specialized `datetime` objects. Recall how we selected columns to make our dataset. In the code below, I use the same idea to show only a few variables, rather than all 35, to save space. We will explain this a little more later in the chapter. 
+
+We can also use the `.describe()` method to get summary information about the quantitative variables in our dataset, including the number of non-missing information, the mean and standard deviation, and a five number summary:
+
+```{python}
+sdf[['e_regiongeo', 'year', 'v2x_polyarchy']].describe()
+```
+
+### Heads, Tails, and Samples
+
+We can also inspect the "head" or the "tail" of our dataframe using the `.head()` and `.tail()` methods, which default to the first or last 5 rows in a dataframe unless you provide a different number as an argument, such as `.head(10)`.
+
+```{python}
+sdf[['country_name', 'year', 'v2x_libdem']].head()
+```
+
+```{python}
+sdf[['country_name', 'year', 'v2x_libdem']].tail(3)
+```
+
+If you would prefer a random sample of rows, you can use the `.sample()` method, which requires you to specify the number of rows you want to sample. 
+
+```{python}
+sdf[['country_name', 'year', 'v2x_libdem']].sample(15)
+```
+
+### What Do You Need? Filtering Rows
+
+When we executed the `.describe()` method earlier, you may have noticed that the range for the `year` variable is 1789-2019. Let's say we have a good reason to focus on the years from 1900-2019. We will have to filter the data to have only the rows that meet my needs. 
+
+There are several ways to filter rows, including slices (e.g. all observations between index $i$ and index $j$), or according to some sort of explicit condition, such as "rows where the year >= 1900." Note that when we filter or slice a dataframe, the new object is just a *view* of the original and still refers to the same data. Pandas will warn us if we try to modify the filtered object, so a lot of the time, things are smoother if we make a new copy.
+
+```{python}
+rowfilter = sdf['year'] >= 1900
+fsdf = sdf[rowfilter].copy()
+fsdf.info()
+```
+
+We could also do this using the `.query()` method, which accepts a boolean expression as a string.
+
+```{python}
+alternate_fsdf = sdf.query('year >= 1900').copy()
+alternate_fsdf.info()
+```
+
+Our final dataframe -- which I have called `fsdf` for **f**iltered and **s**ubsetted **d**ata**f**rame -- now has 13 columns (from 4,108) and 18,787 observations (from 27,013).
+
+### Writing Data to Disk
+
+Just as I read our initial CSV file into Pandas using the `read_csv()` function, I can write this new dataframe to disk using the `write_csv()` function.
+
+```{python}
+fsdf.to_csv('input/filtered_subset.csv', index=False)
+```
+
+## UNDERSTANDING PANDAS DATA STRUCTURES
+
+Now let's discuss Pandas' main data structures, Series and DataFrames, and how they relate to one another.
+
+### The `Series`
+
+Each column in a dataframe is an object called **a Series**. A Series is a one-dimensional object (e.g. a vector of numbers) with an index, which is itself a vector, or array, of labels. 
+
+For example, the column `v2x_delibdem` in `fsdf` is a Series containing floats and the index label for each observation. Printing a sample of 15 observations gives me a numerical index for each observation on the left and the actual value on the right. The index values are ordered in the Series itself, but they are out of sequence here because we pulled a random sample. As this is for demonstration purposes, I've included a random_state value to ensure you get the same sample that I do if you re-run this block.
+
+```{python}
+fsdf['v2x_delibdem'].sample(15, random_state = 42)
+```
+
+In most cases, the default `index` for a Series or dataframe is an immutable vector of integers:
+
+```{python}
+fsdf.index
+```
+
+We can easily modify an index so that it is made of up some other type of vector instead, including a `string`. Surprisingly, index values do not need to be unique. This enables some powerful techniques, but most of the time, you should avoid manually changing indexes. 
+
+#### Accessing a Specific Row by its Index
+
+We can use the index to retrieve specific rows from a dataframe or specific values from a Series, much as we would if we were selecting an element from a `list`, `tuple`, or `array`. The easiest way to do this is to pass the index value (e.g. 202) to `.loc[]`. As you can see below, the result is the observation-specific value for each variable in the dataframe.
+
+```{python}
+fsdf.loc[202]
+```
+
+```{python}
+fsdf['v2x_delibdem'].loc[202]
+```
+
+```{python}
+fsdf['v2x_delibdem'].loc[20000]
+```
+
+Note that `.loc` does *not* refer to the 202nd row of the dataframe. If you were looking closely at the `.index` command above, you might have noticed the dataframe only contains 18,787 rows but `.loc` can still return row 20,000 - the index didn't change when you removed a bunch of rows from the dataframe. Think of `.loc` as accessing a dictionary of the index values - it will even give a `KeyError` if you ask for an element that doesn't exist. 
+
+Instead, if we want the access the n-th row of a dataframe, we can use `.iloc[n]`. Think of the index as a list and you're referring to an element of that list by its list index. Let's use `.iloc` to select the last element in the dataframe. Note that the index position for the last element will be 18,786 even though the dataframe length is 18,787, because Python data structures are almost always 0-indexed. Here you see the index of the row, which was formerly the row number, as the `Name` at the bottom.
+
+```{python}
+fsdf.iloc[18786]
+```
+
+If there isn't a reason to retain the original indexing of the unfiltered dataframe, it's usually a good idea to reset the index. 
+
+```{python}
+fsdf.reset_index(inplace = True, drop = True)
+fsdf.loc[18786]
+```
+
+Afterwards, `.loc` and `.iloc` become fairly interchangeable, with a few exceptions: `.loc` has dictionary-like capabilities whereas `.iloc` is more list-like. Now, let's take a closer look at the dataframe.
+
+### Dataframes
+
+**Dataframes** in Pandas are really just collections of Series that are aligned on the same index values. In other words, the Series we worked with previously have their own indices when we work with them as standalone Series, but in the `fsdf` dataframe, they share an index. 
+
+As you've already seen, dataframes are organized with variables in the columns and observations in the rows, and you can grab a single Series from a dataframe using square brakets -- let's do that now, using the `fsdf` dataframe:
+
+```{python}
+deliberative = fsdf['v2x_delibdem']
+```
+
+Note that we can also use dot notation to select columns. `fsdf.v2x_delibdem` is functionally equivalent to `fsdf['v2x_delibdem']`, and may be used interchangeably.
+
+We are not limited to selecting columns that already exist in our dataset. You can also create and add new ones. For example, you can create a new column called "21 Century" and assign Boolean value based on whether the observation is in the 2000s.
+
+```{python}
+fsdf['21 Century'] = fsdf['year'] >= 2000
+fsdf[['21 Century']].value_counts()
+```
+
+Sometimes, the new columns created are transformations of a Series that already exists in the dataframe. For example, you can create a new `missing_political_violence_data` column which will be `True` when the `v2caviol` Series (levels of political violence) is empty and `False` otherwise. 
+
+```{python}
+fsdf['missing_political_violence_data'] = fsdf['v2caviol'].isna()
+fsdf['missing_political_violence_data'].value_counts()
+```
+
+As you can see from executing `value_counts()`, there is missing data on levels of political violence for 6042 observations. 
+
+### Missing Data
+
+It's important to understand how missing data is handled. Missing data is common in real-world datasets, and it can be missing for multiple reasons! Generally, Pandas uses the `np.nan` value to represent missing data. NumPy's `np.nan` value is a special case of a floating point number representing an unrepresentable value. These kinds of values are called **`NaNs`** (Not a Number).
+
+```{python}
+import numpy as np
+
+type(np.nan)
+```
+
+`np.nan` cannot be used in equality tests, since any comparison to a `np.nan` value will evaluate as False. This includes comparing `np.nan` to itself.
+
+```{python}
+n = np.nan 
+n == n
+```
+
+`np.nan` values do not evaluate to `False` or `None`. This can make it difficult to distinguish missing values. You can use the `np.isnan()` function for this purpose, and it is especially useful in control flow.
+
+```{python}
+if np.nan is None: 
+    print('NaN is None') 
+if np.nan: 
+    print('NaN evaluates to True in control flow') 
+if np.isnan(np.nan): 
+    print('NaN is considered a NaN value in NumPy')
+```
+
+Additionally, `np.nan` values are generally excluded from Pandas functions that perform calculations over dataframes, rows, or columns. For example, documentation often stipulates that a calculation is done over all values, excluding `NaN` or `NULL` values.
+
+```{python}
+total = len(fsdf['v2caviol']) 
+count = fsdf['v2caviol'].count() 
+print(f'Total: {total}') 
+print(f'Count: {count}') 
+print(f'Diff: {total-count}')
+```
+
+The total number of items in the `v2caviol` column (political violence) is much higher than the counts received from the count() function. If what we learned above is correct, this difference should be accounted for when we discover how many items in this column are `NaNs`.
+
+```{python}
+nans = fsdf['v2caviol'].isna().sum() 
+print(' NaNs: {}'.format(nans))
+```
+
+As you can probably tell, the `.isna()` method, which is similar to `np.isnan()` but covers additional cases, can be very useful in transforming and filtering data.
+
+## AGGREGATION & GROUPED OPERATIONS
+
+Data analysis projects often involve aggregation or grouped operations. For example, we might want to compute and compare summary statistics for observations that take different values on a categorical variable. It can be helpful to be able to carve up the dataset itself, performing operations on different subsets of data. We're going to do that using the `.groupby()` method, which partitions the dataframe into groups based on the values of a given variable. We can then perform operations on the resulting groups. Let's group our countries into geographic regions using the `e_regiongeo` variable.
+
+```{python}
+grouped = fsdf.groupby('e_regiongeo')
+```
+
+The above code returns a grouped object that we can work with. Let's say we want to pull out a specific group, like South East Asia, which is represented in the data using the numerical ID `13`. I know this because the relevant information is provided in the VDEM codebook, which I suggest you keep open whenever you are working with the VDEM data. 
+
+We can use the `get_group()` method to pull a group from the grouped object. (Note that the `.get_group()` code below is equivalent to `fsdf[fsdf['e_regiongeo'] == 13]`.) 
+
+```{python}
+south_east_asia = grouped.get_group(13)
+south_east_asia[['country_name', 'year', 'e_boix_regime']].head()
+```
+
+The data stored in `south_east_asia` are all of the observations of South East Asian countries in the VDEM data, stored now in their own dataframe. `.get_group()` is yet another way to extract a subset of a dataframe (by way of a `groupby` object), and is especially useful when the subset of data you want to work with is only observations with a particular value for a categorical variable in your data.
+
+Generally speaking, when we group a dataset like this it's because we want to compute something for a group within the dataset, or for multiple groups that we want to compare. We can do this by specifying the grouped object, the `Series` we want to perform an operation on, and finally the operation we want to perform. For example, let's compute the median polyarchy score for countries in each of the regions in the dataset. 
+
+```{python}
+poly = grouped['v2x_polyarchy'].median()
+poly.head()
+```
+
+It would be more useful to see the name of the region rather than its numeric label. We can do this by creating a dictionary that maps the numeric IDs to the region name, and then use the `.map()` method to tell Pandas were to lookup the values it needs to create a new column with the country names. First, the dictionary: 
+
+```{python}
+regions = {
+    1:'Western Europe',
+    2:'Northern Europe',
+    3:'Southern Europe',
+    4:'Eastern Europe',
+    5:'Northern Africa',
+    6:'Western Africa',
+    7:'Middle Africa',
+    8:'Eastern Africa',
+    9:'Southern Africa',
+    10:'Western Asia',
+    11:'Central Asia',
+    12:'East Asia',
+    13:'South-East Asia',
+    14:'South Asia',
+    15:'Oceania', # (including Australia and the Pacific)
+    16:'North America',
+    17:'Central America',
+    18:'South America',
+    19:'Caribbean' # (including Belize Cuba Haiti Dominican Republic)
+}
+```
+
+And now we can pass this dictionary into the `.map()` method applied to the `fsdf['e_regiongeo']` Series, creating a new Series called `fsdf['Region']`
+
+```{python}
+fsdf['Region'] = fsdf['e_regiongeo'].map(regions)
+```
+
+It is also possible to group by multiple variables, such as geographic region and year, and then perform an operation on *those* slightly more fine-grained groups. This will result in 2,211 groups, so we will preview a random sample of 10.
+
+```{python}
+grouped = fsdf.groupby(['Region', 'year'])
+poly = grouped['v2x_polyarchy'].median()
+poly.reset_index()
+pd.DataFrame(poly).reset_index().sample(10)
+```
+
+We can perform other types of operations on the grouped object itself, such as computing the number of observations in each group (equivalent to `value_counts()`).
+
+```{python}
+grouped.size().sort_values(ascending=False)
+```
+
+Finally, we can perform *multiple* operations on a grouped object by using the `agg()` method. The `agg()` method will apply one or more aggregate functions *to a grouped object*, returning the results of each. 
+
+```{python}
+with_agg = grouped['v2x_polyarchy'].agg([min, np.median, 'max', 'count'])
+with_agg.reset_index().sample(10)
+```
+
+We can even define our own function for `agg()` to use! If we're willing to pass a dictionary, `.agg()` also lets us apply different functions to multiple variables at the same time! Instead of passing one list per function, you can use a dictionary where the column names are the keys and the functions are the values (you can also pass a list of functions) to perform some truly involved aggregration all in one line of code.
+
+## WORKING WITH TIME SERIES DATA
+
+Many real world datasets include a temporal component. This is especially true if you are working with data that comes from the web, which may have precise timestamps for things like the time an email was sent, or a news story was published. Strings are often used to store dates and times, but this is not ideal because strings don't take advantage of the unique properties of time. It is difficult to sort dates if they are stored in strings with strange formats, for example. 
+
+```{python}
+"Monday Mar 2, 1999" > "Friday Feb 21, 2020"
+```
+
+Extracting features like day, month, or timezone from strings can be time-consuming an error-prone. This is why Pandas and Python have implemented special types for date/time objects, called **[`Timestamp`]**(https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html) and **[`Datetime`]**(https://docs.python.org/2/library/datetime.html), respectively. These are essentially equivalent to one another.   
+
+The VDEM data contains an enormous amount of temporal data, but all at the level of the year. Let's switch over to a different dataset that has more fine-grained temporal data, and more closely resembles data that you would obtain from the web. In this case, we are going to use some data on Russian information operations targeting the 2016 American Presidential Election. You can read a bit about this data on the FiveThirtyEight blogpost [Why We’re Sharing 3 Million Russian Troll Tweets](https://fivethirtyeight.com/features/why-were-sharing-3-million-russian-troll-tweets/).
+
+Unlike the VDEM data, the Russian Troll Tweets come as a collection of `csv` files. We will use a clever little trick to load up all the data in a single dataframe. The code block below iterates over each file in the `russian-troll-tweets/` subdirectory in the data directory. If the file extension is `csv`, is reads the `csv` into memory as a dataframe. All of the dataframes are then concatenated into a single dataframe containing data on ~ 3M tweets.
+
+```{python}
+import os
+data_dir = os.listdir("input/russian-troll-tweets/")
+
+files = [f for f in data_dir if 'csv' in f]
+
+tweets_df = pd.concat((pd.read_csv(
+    f'{"input/russian-troll-tweets/"}/{f}', 
+    encoding='utf-8', low_memory=False) for f in files), ignore_index=True)
+
+tweets_df.info()
+```
+
+As you can see, we have two datatypes in our dataframe: `object` and `int64`. Remember that Pandas uses `object` to refer to columns that contain strings, or which contain mixed types, such as strings and integers. In this case, they refer to strings. 
+
+One further thing to note about this dataset: each row is a tweet from a specific account, but some of the variables describe attributes of the tweeting accounts, not of the tweet itself. For example, followers describes the number of followers that the account had at the time it sent the tweet. This makes sense, because tweets don't have followers, but accounts do. We need to keep this in mind when working with this dataset.
+
+We can convert date strings from a column or `Series` into Timestamps using the `to_datetime` function. We will do that here, assigning the new `datetime` objects to new variables. Note that this code will take a bit of time to run when executed on all 3 million tweets (if your computer isn't the strongest, you might want to consider first using `tweets_df.sample()` to reduce the size of the dataframe).
+
+```{python}
+tweets_df['dt_publish_date'] = pd.to_datetime(tweets_df['publish_date'])
+tweets_df['dt_harvested_date'] = pd.to_datetime(tweets_df['harvested_date'])
+```
+
+```{python}
+tweets_df[['author', 'content', 'publish_date']].sample(5)
+```
+
+In order, the datetime object fields are as follows:
+`year-month-day hour:minute:second:microsecond`. To retrieve an integer corresponding to the month when the tweet was published: 
+
+```{python}
+tweets_df['dt_publish_date'].dt.month
+```
+
+When our date and time variables are stored as `datetime` objects, we can access many time-specific attributes using dot notation. The Pandas documentation includes many examples of the kinds of temporal units and other functionality. 
+
+We can also sort our dataframe based on `publish_date` because Pandas knows that it is working with `datetime` objects.
+
+```{python}
+sorted_df = tweets_df.sort_values(['dt_publish_date'])
+```
+
+We can also add and subtract datetime columns to create new columns. 
+
+```{python}
+tweets_df['days_until_harvest'] = tweets_df['dt_harvested_date'] - tweets_df['dt_publish_date']
+tweets_df['days_until_harvest'].sample(10) 
+```
+
+Let's create new variables for the Year, Month, and Day each tweet was created on. We can do this by using the year, month, and day attributes on the `datetime` object.
+
+```{python}
+tweets_df['Year'] = tweets_df['dt_publish_date'].dt.year
+tweets_df['Month'] = tweets_df['dt_publish_date'].dt.month
+tweets_df['Day'] = tweets_df['dt_publish_date'].dt.day
+```
+
+Pandas offers specialized tools for grouping data into various segments of time. This involves converting a time series at one level into another (e.g. from days to weeks), and is known as **resampling**. Within resampling broadly, **upsampling** aggregates dates / times  and **downsampling** disaggregates dates / times. Let's upsample our data to plot the number of Tweets per day.
+
+The first thing we will do is use the `datetime` object `dt_publish_date` as an index. This will let us easily group observations by resampling dates.
+
+```{python}
+tweets_df = tweets_df.set_index('dt_publish_date')
+```
+
+We can now use the `.resample()` method with the argument `D` to specify that we want to group by day. The table below provides some other options you can use when resampling dates.
+
+| Value | Description                                  |
+|:------|:---------------------------------------------|
+| B     | business day frequency                       |
+| C     | custom business day frequency (experimental) |
+| D     | calendar day frequency                       |
+| W     | weekly frequency                             |
+| M     | month end frequency                          |
+| BM    | business month end frequency                 |
+| CBM   | custom business month end frequency          |
+| MS    | month start frequency                        |
+| BMS   | business month start frequency               |
+| CBMS  | custom business month start frequency        |
+| Q     | quarter end frequency                        |
+| BQ    | business quarter endfrequency                |
+| QS    | quarter start frequency                      |
+| BQS   | business quarter start frequency             |
+| A     | year end frequency                           |
+| BA    | business year end frequency                  |
+| AS    | year start frequency                         |
+| BAS   | business year start frequency                |
+| BH    | business hour frequency                      |
+| H     | hourly frequency                             |
+| T     | minutely frequency                           |
+| S     | secondly frequency                           |
+| L     | milliseonds                                  |
+| U     | microseconds                                 |
+| N     | nanosecondsa                                 |
+
+Table: Units of time in Pandas. You can use any of these units to upsample or downsample temporal data.
+
+We will also use the `.size()` method to determine the number of tweets that were produced each day.
+
+```{python}
+grouped_cal_day = tweets_df.resample('D').size()
+grouped_cal_day
+```
+
+At this point, we are going to visualize the results of our work with a line plot. We are going to do this with the Seaborn and matplotlib packages, which we will discuss in the next chapter. For now, focus on the visualization and ignore the code. The code blocks below produces Figures @fig:07_01 and @fig:07_02.
+
+```{python}
+import seaborn as sns
+import matplotlib.pyplot as plt
+```
+
+```{python}
+sns.lineplot(data=grouped_cal_day, color='#32363A')
+sns.despine()
+plt.show()
+```
+
+Days may not be the best unit of time to work with in this case. We can, of course, upsample from days to weeks instead, and produce the same plot.
+
+```{python}
+weekly = tweets_df.resample('W').size()
+weekly.head()
+```
+
+```{python}
+ax = sns.lineplot(data=weekly, color='#32363A')
+ax.set_xlabel('\nWeekly observations')
+ax.set_ylabel('Number of Tweets\n')
+sns.despine()
+plt.show()
+```
+
+The plot is much cleaner when we count at the level of weeks rather than days.
+
+## COMBINING DATAFRAMES
+
+Combining dataframes is a *very* common task. In fact, though it might not seem obvious, combining datasets is one of the most valuable skills you can have when doing computational social science. Here, we will consider some of the most common approaches: **concatenating** and **merging**, and we will briefly describe a more advanced set of methods commonly referred to as **record linkage**.
+
+Concatenating a dataframe is conceptually pretty simple - think of it like attaching the rows or columns of one dataframe below/to the right of the last row/column of another dataframe. For this to be useful, the two dataframes should have at least one row or column in common, but usually you would only concatenate if there were many such overlapping entries.
+
+```{python}
+full_df =  pd.read_csv("input/filtered_subset.csv")
+df_australia = full_df.query("country_name == 'Australia'")
+len(df_australia)
+```
+
+```{python}
+df_sa = full_df.query("country_name == 'South Africa'")
+len(df_sa)
+```
+
+The default behaviour for `pd.concat()` is to perform a row-wise join, which it refers to as `axis=0`. We can override this default by specifying `axis=1`, which will produce a column-wise join:
+
+```{python}
+concatenated = pd.concat([df_australia, df_sa], axis=1)
+len(concatenated)
+```
+
+When we concatenate the two dataframes the number of columns stays the same but the number of rows increases, accounting for the rows in both the original dataframes. Normally, this kind of concatenation would result in a different number of columns, but in this case, the two dataframes we joined had the *exact* same columns (which makes sense, given that they were both extracted from the same parent dataframe).
+
+### Merging
+
+An alternative way to combine datasets is to **merge** them. If you want to create a dataframe that contains columns from multiple datasets but is aligned on rows according to some column (or set of columns), you probably want to use the `merge()` function. To illustrate this, we will work with data from two different sources. The first is the VDEM data we used in first part of this chapter (`fsdf`). The second is a dataset from Freedom House on levels of internet freedom in 65 countries. More information is available at https://freedomhouse.org/countries/freedom-net/scores. 
+
+```{python}
+freedom_df = pd.read_csv( "input/freedom_house/internet_freedoms_2020.csv")
+```
+
+To merge these dataframes we need to find a column which can be used to match rows from one dataframe to the rows in the other. The columns don't need to have the same name, just values that can be matched with one another. Whatever columns we choose will be called "keys" in our merge.  In our case this will be the country name columns from each dataset. 
+
+```{python}
+fsdf.columns
+```
+
+```{python}
+freedom_df.columns
+```
+
+We will use the `merge` function to combine these two dataframes using 'country_name' and 'Country'. We're going to do an `inner` merge, which is the default if the option isn't set, and will keep only the keys (ie. countries) that appear in both dataframes.
+
+```{python}
+merged = pd.merge(fsdf, freedom_df, how='inner', left_on='country_name', right_on='Country')
+print('merged has {} rows and {} columns'.format(len(merged), len(merged.columns)))
+```
+
+```{python}
+len(fsdf) + len(freedom_df)
+```
+
+You should see 5 new columns in the `merged` dataframe compared to the `fsdf` one. Notice how many rows each of the dataframes have: many fewer rows than the original VDEM dataframe but many more than the Freedom House dataframe. So in our case, if a row's country doesn't appear in the other dataset, that row will not be included in the merged dataframe. 
+
+This can be adjusted using the `how` parameter. There are five ways of merging dataframes in Pandas: left, right, outer, inner, and cross. Check out the [documentation](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.dataframe.merge.html) to see how the other four methods work.
+
+There are ways to improve the matching, either manual methods or semi-automated methods such as record linkage, described below. Let's see which countries aren't common between the dataframes, using a set operation **`^` (XOR)**, which returns a set of elements from the combination of set1 and set2 that are either not in set1 or not in set2.
+
+```{python}
+fsdf_set = set(fsdf['country_name'].tolist())
+freedom_set = set(freedom_df['Country'].tolist())
+
+unmatched = fsdf_set ^ freedom_set
+
+print('Total countries: ' + str(len(fsdf_set) + len(freedom_set)))
+print('Unmatched countries: ' + str(len(unmatched)))
+```
+
+We can then use the `&` set operator to see which of the missing countries are present in each of the country sets. If the data is small enough, we can print the two sets as sorted lists in a dataframe. The most obvious manual change we could do here is make "United States" and "United States of America" consistent but we would also expect Myanmar to be in the VDEM data. We could also make this change manually by knowing that Myanmar was referred to as Burma until 1989. However, it just so happens that at the top of the `south_east_asia` aggregated group dataframe from earlier, "Burma/Myanmar" was the name used, rather than Burma alone. For a more complex but automated solution to disambiguating different versions of country names, we would have to use some form of record linkage, discussed briefly below.
+
+```{python}
+fsdf_missing = list(fsdf_set & unmatched)
+fsdf_missing.sort()
+freedom_missing = list(freedom_set & unmatched)
+freedom_missing.sort()
+pd.DataFrame({'VDEM': pd.Series(fsdf_missing), 'Freedom': pd.Series(freedom_missing)})
+```
+
+### Record Linkage
+
+The `merge` function works great when you can make _exact_ matches between columns. It also works really well because checking for exact matches has been optimized in Pandas. However, it's often the case that we need to combine datasets which cannot be merged based on exact matches. 
+
+Instead, we often have to use **inexact matching** (aka "fuzzy matching" or "approximate matching") to combine datasets. Typically, this involves using some similarity metric to measure how close two keys are to one another. Then a match is made based on thresholds, rules, or a nearest-neighbour approach. However, naively calculating similarity between all possible key combinations results in incredibly lengthy compute times. Instead, there are ways to exclude some key pairs from the beginning. This allows you to drastically reduce the number of comparisons you need to make. Additionally, inexact matching can leverage machine learning techniques which uses human curated examples to learn to predict whether two rows should be matched with one another. 
+
+If this "more advanced" approach to combining datasets is of interest, I highly suggest looking into the [`recordlinkage`](https://github.com/J535D165/recordlinkage) Python package. 
+
+> [Start Box]   
+> **Further Reading**    
+>   
+> Much of what I introduce in this chapter is foundational; you'll build on that foundation in later chapters. But if you are looking for a slower and more comprehensive introduction to Pandas and Numpy, then I would recommend VanderPlas' [-@vanderplas2016python] *Python Data Science Handbook*.
+>
+> [End Box]
+
+# CONCLUSION
+
+## Key Points 
+
+- In this chapter, we expanded into the world of processing structured data using Pandas; these are *critical* skills for computational social scientists
+- We covered the basic Pandas data structures, Series and dataframes, and the `index` and `datetime` objects
+- We discussed how to subset dataframes by selecting columns and filtering rows, followed by a discussion of how to do systematic comparisons by performing operations on grouped dataframes
+- We then discussed how to combine multiple dataframes using `merge` and `concatenate` and introduced the general idea of record linkage. 
+
