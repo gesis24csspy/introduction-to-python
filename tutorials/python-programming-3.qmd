@@ -75,7 +75,22 @@ I will focus on the `read_csv()` function to demonstrate the general process. Th
 
 This chapter will use data from the Varities of Democracy (VDEM) dataset. VDEM is an ongoing research project to measure the level of democracy in governments around the world and updated versions of the dataset are released on an ongoing basis. The research is led by a team of over 50 social scientists who coordinate the collection and analysis of expert assessments from over 3,200 historians and Country Experts (CEs). From these assessments, the VDEM project has created a remarkably complex array of indicators designed to align with five high-level facets of democracy: electoral, liberal, participatory, deliberative, and egalitarian. The dataset extends back to 1789 and is considered the gold standard of quantitative data about global democratic developments. You can find the full codebook online, and I strongly recommend that you download it and consult it as you work with this data. You can find the full dataset at (https://www.v-dem.net/en/data/data/v-dem-dataset-v11/) and the codebook here (https://www.v-dem.net/media/filer_public/e0/7f/e07f672b-b91e-4e98-b9a3-78f8cd4de696/v-dem_codebook_v8.pdf). The filtered and subsetted version we will use in this book is provided in the `data/vdem` directory of the online learning materials.
 
+> Download the Data
+> 
+> We'll download the data using wget. Run the following command in your terminal:
+>
+> ```zsh
+> wget -O "input/V-Dem-CY-Full+Others-v10.csv" "https://www.dropbox.com/scl/fi/cbsu5do70vh6ud93gvhpo/V-Dem-CY-Full-Others-v10.csv?rlkey=twl5qn5lz4nxrd7s3nertdyws&st=ur9xx7vl&dl=1"
+> ```
+>
+> Now you can load the data from `input/` using the code block below.
+
 Let's load the CSV file into a Pandas `dataframe`.
+
+```{python}
+#| echo: false
+!wget -O "input/V-Dem-CY-Full+Others-v10.csv" "https://www.dropbox.com/scl/fi/cbsu5do70vh6ud93gvhpo/V-Dem-CY-Full-Others-v10.csv?rlkey=twl5qn5lz4nxrd7s3nertdyws&st=ur9xx7vl&dl=1"
+```
 
 ```{python}
 df = pd.read_csv('input/V-Dem-CY-Full+Others-v10.csv', low_memory=False)
@@ -410,6 +425,35 @@ The VDEM data contains an enormous amount of temporal data, but all at the level
 
 Unlike the VDEM data, the Russian Troll Tweets come as a collection of `csv` files. We will use a clever little trick to load up all the data in a single dataframe. The code block below iterates over each file in the `russian-troll-tweets/` subdirectory in the data directory. If the file extension is `csv`, is reads the `csv` into memory as a dataframe. All of the dataframes are then concatenated into a single dataframe containing data on ~ 3M tweets.
 
+> Download the Data
+> 
+> Once again, we'll download the data using wget. Run the following command in your terminal:
+> ```zsh
+> wget -N -q -O input/russian_troll_tweets.zip "https://www.dropbox.com/scl/fo/a3uxioa2wd7k8x8nas0iy/AH5qjXAZvtFpZeIID0sZ1xA?rlkey=p1471igxmzgyu3lg2x93b3r1y&st=5g04qmt6&dl=1"
+> ```
+>
+> Next, unzip the file into the `input/` subdirectory.
+>
+> ```zsh
+> unzip -o input/russian_troll_tweets.zip -d input/russian-troll-tweets
+> rm input/russian_troll_tweets.zip
+> ```
+> Then you can load the data from `input/` using the code block below.
+
+```{python}
+#| echo: false
+!wget -N -q -O input/russian_troll_tweets.zip "https://www.dropbox.com/scl/fo/a3uxioa2wd7k8x8nas0iy/AH5qjXAZvtFpZeIID0sZ1xA?rlkey=p1471igxmzgyu3lg2x93b3r1y&st=5g04qmt6&dl=1"
+
+!unzip -o input/russian_troll_tweets.zip -d input/russian-troll-tweets
+```
+
+Let's clean up the zip file. 
+
+```{python}
+!rm input/russian_troll_tweets.zip 
+```
+
+
 ```{python}
 import os
 data_dir = os.listdir("input/russian-troll-tweets/")
@@ -421,6 +465,21 @@ tweets_df = pd.concat((pd.read_csv(
     encoding='utf-8', low_memory=False) for f in files), ignore_index=True)
 
 tweets_df.info()
+```
+
+
+> There are more than 2.9M tweets in this dataset, and 21 columns. Let's run this code with a 10% random sample. You can increase (or decrease) the sample size if you wish.
+>
+> ```{python}
+> sample_size = 0.1
+> tweets_df = tweets_df.sample(frac=sample_size)
+> ```
+> 
+
+```{python}
+#| echo: false
+sample_size = 0.1
+tweets_df = tweets_df.sample(frac=sample_size)
 ```
 
 As you can see, we have two datatypes in our dataframe: `object` and `int64`. Remember that Pandas uses `object` to refer to columns that contain strings, or which contain mixed types, such as strings and integers. In this case, they refer to strings. 
@@ -574,6 +633,17 @@ When we concatenate the two dataframes the number of columns stays the same but 
 ### Merging
 
 An alternative way to combine datasets is to **merge** them. If you want to create a dataframe that contains columns from multiple datasets but is aligned on rows according to some column (or set of columns), you probably want to use the `merge()` function. To illustrate this, we will work with data from two different sources. The first is the VDEM data we used in first part of this chapter (`fsdf`). The second is a dataset from Freedom House on levels of internet freedom in 65 countries. More information is available at https://freedomhouse.org/countries/freedom-net/scores. 
+
+> Download the data.
+> 
+> 
+> 
+> 
+
+```{python}
+#| echo: false
+!wget -O "input/freedom_house/internet_freedoms_2020.csv" "https://www.dropbox.com/scl/fi/ewdlcxvubzpko6hu32583/internet_freedoms_2020.csv?rlkey=yzc5sbgmpk3nnn2g1u0sg9146&st=uob3s1rt&dl=1"
+```
 
 ```{python}
 freedom_df = pd.read_csv( "input/freedom_house/internet_freedoms_2020.csv")
