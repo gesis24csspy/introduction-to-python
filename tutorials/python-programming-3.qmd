@@ -636,9 +636,9 @@ An alternative way to combine datasets is to **merge** them. If you want to crea
 
 > Download the data.
 > 
-> 
-> 
-> 
+> ```zsh
+> wget -O "input/freedom_house/internet_freedoms_2020.csv" "https://www.dropbox.com/scl/fi/ewdlcxvubzpko6hu32583/internet_freedoms_2020.csv?rlkey=yzc5sbgmpk3nnn2g1u0sg9146&st=uob3s1rt&dl=1"
+> ```
 
 ```{python}
 #| echo: false
