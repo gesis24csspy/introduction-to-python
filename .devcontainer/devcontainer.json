@@ -1,4 +1,4 @@
- {
+{
 	"name": "data-collection",
 	"image": "mclevey/data-collection:latest",
 	"postCreateCommand": "poetry install",
